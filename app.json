@@ -1,0 +1,13 @@
+{
+  "name": "GarageFinder",
+  "displayName": "GarageFinder",
+  "android": {
+    "package": "com.smusev.garagefinder",
+    "config": {
+      "googleMaps": {
+        "apiKey": "AIzaSyC-CWmbCLn9Me43N0NhmtsWTtzQ7etxkmc"
+      }
+    },
+    "versionCode": 1
+  }
+}
