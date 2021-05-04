@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState, useRef } from 'react';
-import { StyleSheet, Dimensions, ScrollView, Animated, Image, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, Dimensions, ScrollView, Animated, Image, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
 //import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
 import MapView from 'react-native-map-clustering';
@@ -8,7 +8,7 @@ import { Marker } from 'react-native-maps';
 //import ClusteredMapView from "react-native-maps-super-cluster";
 import { COORDS, INITIAL_POSITION } from "../Data";
 
-export default function Dashboard({navigation}) {
+export default function Dashboard({navigation}:any) {
 
   const WIDTH = Dimensions.get('window').width;
   const HEIGHT = Dimensions.get('window').height;
@@ -161,7 +161,12 @@ const renderCluster = (cluster) => {
       </ClusteredMapView> 
       */ }
 
-      <Text style={{ position: 'absolute', top: 20, alignContent:'center', zIndex: 1 }}>Filter goes here</Text>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('Filter')}
+        style={styles.filterButton}>
+        <Text style={styles.filterText}>Filter goes here</Text>
+      </TouchableOpacity>
+      
 
       <MapView 
         initialRegion={INITIAL_REGION} 
@@ -250,6 +255,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  filterButton:{ 
+    margin: 5,
+    width: 350,
+    height: 50,
+    backgroundColor: 'white',
+    borderRadius: 35,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position:'absolute',
+    top: 10,
+    left: 10,
+    zIndex: 2,
+    },
   title: {
     fontSize: 20,
     fontWeight: 'bold',

@@ -1,5 +1,5 @@
-import {ADD_POST} from '../actions/actionTypes';
-import {PostTypes} from '../actions/post.d';
+import {ADD_POST, INCREASE_COUNTER} from '../actions/actionTypes';
+import {PostTypes} from '../actions/post';
 
 // Initial State
 const initialState = {
@@ -22,7 +22,8 @@ const postReducer = (state = initialState, action: PostTypes) => {
 
     // Testing purposes:
     // Increase Counter
-    case 'INCREASE_COUNTER': {
+    case INCREASE_COUNTER: {
+      console.log('reducer state: +1');
       return {
         // State
         ...state,

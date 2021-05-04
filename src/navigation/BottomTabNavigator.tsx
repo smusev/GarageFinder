@@ -6,6 +6,8 @@ import Dashboard from '../screens/Dashboard';
 import Details from '../screens/Details';
 import Filter from '../screens/Filter';
 import Settings from '../screens/Settings';
+import Favorite from '../screens/Favorite';
+import Add from '../screens/Add';
 import {
   BottomTabParamList,
   DashboardParamList,
@@ -57,11 +59,6 @@ const FavoriteStack = createStackNavigator<FavoriteParamList>();
 function FavoriteNavigator() {
   return (
     <FavoriteStack.Navigator>
-      <FavoriteStack.Screen
-        name="Favorites"
-        component={Favorites}
-        options={{headerShown: false, headerTitle: 'Favorites Title'}}
-      />
       <FavoriteStack.Screen
         name="Favorite"
         component={Favorite}

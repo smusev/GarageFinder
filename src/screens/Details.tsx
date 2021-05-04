@@ -5,6 +5,13 @@ import {RootStackParamList} from '../types';
 import GallerySwiper from "react-native-gallery-swiper";
 import ImageView from "react-native-image-viewing";
 import { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
+import FontAwesome, {
+  SolidIcons,
+  RegularIcons,
+  BrandIcons,
+  parseIconFromClassName,
+} from 'react-native-fontawesome';
 
 export default function Details({
   navigation,
@@ -13,18 +20,21 @@ export default function Details({
   const images = [
     {
       key: 1,
+      id: 1,
       uri: "https://images.unsplash.com/photo-1571501679680-de32f1e7aad4",
     },
     {
       key: 2,
+      id: 2,
       uri: "https://images.unsplash.com/photo-1573273787173-0eb81a833b34",
     },
     {
       key: 3,
+      id: 3,
       uri: "https://images.unsplash.com/photo-1569569970363-df7b6160d111",
     },
   ];
-  
+  /*
   const renderPhoto = ({ item, index }) => {
     return (
         <View style = {{ width: SCREEN_WIDTH + 5, height: 'auto', 
@@ -37,6 +47,7 @@ export default function Details({
           {itemSeparatorComponent()}
         </View>
   )}
+*/
 
   const itemSeparatorComponent = () => {
     return <View style = {
@@ -73,27 +84,42 @@ export default function Details({
             style={{width: SCREEN_WIDTH + 5, height:'100%'}}
           />
 */}
-    <FlatList
-      horizontal
-      pagingEnabled
-      data={images}
-      style={styles.flatlist}
-      keyExtractor={image => image.id}
-      showsHorizontalScrollIndicator={false}
-      renderItem={({item}) => {
-        return (
-          <View style={styles.imageContainer}>
-            <Image style={styles.image} source={{uri: item.uri}} />
-          </View>
-        );
-      }}
+    <TouchableOpacity
+      onPress={() => navigation.goBack()}
+      style={styles.returnButton}>
+        <FontAwesome
+          style={styles.returnIcon}
+          icon={SolidIcons.arrowLeft}
+        />
+    </TouchableOpacity>
+  
+    <View style={styles.galleryContainer}>
+      <FlatList
+        horizontal 
+        pagingEnabled
+        data={images}
+        style={styles.galleryList}
+        initialNumToRender={2} 
+        keyExtractor={image => image.id}
+        showsHorizontalScrollIndicator={false}
+        renderItem={({item}) => {
+          return (
+            <View style={styles.imageContainer}>
+              <Image style={styles.galleryImage} source={require('../assets/1.jpg')} />
+            </View>
+          );
+        }}
     />
+    </View>
 
-        <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.link}>
-            <Text style={styles.linkText}>RETURN BUTTON</Text>
-        </TouchableOpacity>
+    <View style={styles.styledInfo}>
+      <Text style={styles.title}>Площадь: 32кв.м.</Text>
+    </View>
+
+    <View style={styles.notStyledInfo}>
+      <Text style={styles.linkText}>Продам гараж, утепен, приватизирован, крыша перекрыта в мае 2020годаб ондулин. Есть свет, яма, установлены полочки для хранения. Салтовка, 602 м/р-н</Text>
+    </View>
+
         {/*
         <ScrollView
             style={styles.gallery}
@@ -115,7 +141,6 @@ export default function Details({
             />
         </ScrollView>
         */}
-      <Text style={styles.title}>This screen Details exist.</Text>
 
 
     </View>
@@ -127,8 +152,38 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
+    justifyContent: 'flex-start',
+    padding: 0,
+  },
+  returnButton:{ 
+    margin: 5,
+    width: 50,
+    height: 50,
+    backgroundColor: 'grey',
+    borderRadius: 35,
     justifyContent: 'center',
-    padding: 20,
+    alignItems: 'center',
+    position:'absolute',
+    top: 10,
+    left: 10,
+    zIndex: 2,
+    },
+  returnIcon:{
+    color: 'white',
+    fontSize: 24,
+  },
+  galleryContainer:{
+    height: "40%",
+  },
+  galleryList:{
+
+  },
+  imageContainer:{
+  },
+  galleryImage:{
+    width: Dimensions.get('window').width,
+    height: undefined,
+    aspectRatio: 1,
   },
   title: {
     fontSize: 20,
@@ -143,14 +198,18 @@ const styles = StyleSheet.create({
     color: '#2e78b7',
   },
   gallery: {
-    height: Dimensions.get('window').height,
     width: Dimensions.get('window').width,
     flexDirection: 'row',
     flexWrap: 'wrap'
   },
+  flatlist: {
+    flex: 1,
+    height: Dimensions.get('window').height*0.35,
+    backgroundColor: 'blue',
+    aspectRatio: 1,
+  },
   cardImage: {
-        width: '100%',
-        height: undefined,
-        aspectRatio: 1,
+    alignSelf: 'center',
+    width: Dimensions.get('window').width,
     }  
 });
