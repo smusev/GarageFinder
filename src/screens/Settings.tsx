@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, FlatList, ScrollView, Image, Button, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, FlatList, ScrollView, Image, Platform, Button, TouchableWithoutFeedback } from 'react-native';
 import { CommonActions, useNavigation } from '@react-navigation/native' // <-- import useNavigation hook
 //import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
 import { RootStateOrAny,useDispatch, useSelector } from 'react-redux';
-import { login, loginSuccess } from '../actions/auth';
+import { login, loginRequestGoogle, loginSuccess, logoutSuccess } from '../actions/auth';
+import auth, {firebase} from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 import {
   GoogleSignin,
   GoogleSigninButton,
@@ -29,10 +31,11 @@ GoogleSignIn.configure({
 export default function ProfileScreen({navigation}){
 
   const dispatch = useDispatch();
-  const {loggedIn} = useSelector((state: RootStateOrAny) => state.loginReducer)
+  const userState = useSelector((state: RootStateOrAny) => state.loginReducer)
+  const stateRedux = useSelector((state: RootStateOrAny) => state)
   const [state, setState] = useState({ user: null });
+  const [userInfo, setUserInfo] = useState(null);
 
-  console.log(loggedIn)
   console.ignoredYellowBox = ['Warning:'];
   const WebClientID = '217160887815-h7rbqk8i1d6hiiebd7gp0ktoqvqibm6c.apps.googleusercontent.com';
 /*
@@ -112,11 +115,11 @@ GoogleSignin.configure({
  
 
 const signIn = async () => {
-  console.log('signIN');
+  dispatch(loginRequestGoogle());
   try {
     await GoogleSignin.hasPlayServices();
     const userInfo = await GoogleSignin.signIn();
-    console.log( userInfo );
+    return(userInfo);
   } catch (error) {
     if (error.code === statusCodes.SIGN_IN_CANCELLED) {
       // user cancelled the login flow
@@ -134,11 +137,70 @@ const   signOut = async () => {
   try {
     await GoogleSignin.revokeAccess();
     await GoogleSignin.signOut();
+    dispatch(logoutSuccess());
     setUserInfo(null); // Remember to remove the user from your app's state as well
   } catch (error) {
     console.error(error);
   }
 };
+
+const signUp = () => {
+  signIn()
+  .then(data => {
+    // data provides us with an idToken and accessToke, we use these to set up a credential
+    const googleCredential = auth.GoogleAuthProvider.credential(data.idToken, data.accessToken);
+    try {
+        firebase.auth().signInWithCredential(googleCredential)
+        .then(user => {
+            //after we have the credential - lets check if the user exists in firestore
+            var docRef = firestore().collection('users').doc(auth().currentUser.uid);
+
+            docRef.get()
+            .then(doc => {
+                dispatch(loginSuccess({id:auth().currentUser?.uid, email:data?.user.email, profilePicture:data?.user.photo }));
+                if (doc.exists) {
+                //user exists then just update the login time
+                setUserInfo(data);
+                return user
+                } else {
+                //user doesn't exist - create a new user in firestore
+                addNewUserToFirestore(user);
+                setUserInfo(data);
+                }
+            })
+            .catch(error => {
+                console.error('Checking if customer exists failed" ' + error);
+            });
+        })
+        .catch(error => {
+            console.error('GoogleSignIn to firebase Failed ' + error);
+        })
+    } catch (error) {
+        console.log("Something generic went wrong, ", error )
+    }
+})
+.catch(error => {
+    console.error('GoogleSignIn to firebase Failed ' + error);
+})
+
+}
+
+function addNewUserToFirestore(user) {
+  const collection = firestore().collection('users');
+  const {profile} = user.additionalUserInfo;
+  const uid = auth().currentUser?.uid;
+  const details = {
+    firstName: profile.given_name,
+    lastName: profile.family_name,
+    fullName: profile.name,
+    email: profile.email,
+    picture: profile.picture,
+    createdDtm: firestore.FieldValue.serverTimestamp(),
+    lastLoginTime: firestore.FieldValue.serverTimestamp(),
+  };
+  collection.doc(auth().currentUser.uid).set(details);
+  return {user, details};
+}
 
 
 /*
@@ -185,37 +247,37 @@ const LoggedInPage = props => {
 
   return (
     <View style={styles.container}>
-        <GoogleSigninButton
-          style={{ width: 192, height: 48 }}
-          size={GoogleSigninButton.Size.Wide}
-          color={GoogleSigninButton.Color.Dark}
-          onPress={signIn}
-          disabled={false} />
-
-      {/*
-      state.user != null ? (
-        <LoggedInPage name={state.user.displayName} photoUrl={state.user.photoURL} />
-      ) : (
-        <LoginPage signIn={signIn} />
-      )
-      */}
+      {userInfo != null 
+        ? <View style={styles.headerColumn}>
+           <Image style={styles.userImage} source={{uri: userInfo?.user.photo}}/>
+           <Text style={styles.userNameText}>{userInfo?.user.name}</Text>
+           </View>
+        : <GoogleSigninButton
+            style={{ width: '100%', height: 64 }}
+            size={GoogleSigninButton.Size.Wide}
+            color={GoogleSigninButton.Color.Dark}
+            onPress={signUp}
+            disabled={false} />
+      }
+        
       <Button
-        title="Go to Details... again"
-        onPress={() => navigation.navigate('Details')}
+        title="SignOut"
+        onPress={() => signOut()}
       />
+      { userState.user !== null ?
       <View style={styles.loggedInContainer}>
+        <Text>{userState?.user.id}</Text>
+        <Text>{userState?.user.email}</Text>
+        <Image style={styles.userImage} source={{uri: userState?.user.profilePicture}}/>
         <Text style={styles.loggedInText}>Logged In: </Text>
-        <Text style={styles.loggedInText}>{`${loggedIn}`}</Text>
         <Button
-          title="Login"
-          onPress={loggedIn === false ? () => dispatch(login(true)) : () => dispatch(login(false))}
+          title="State"
           style={styles.loginButton}
+          onPress = {() => {console.log(stateRedux)}}
         />
-      </View>
-      <ScrollView>
-        <Text>{JSON.stringify(state)}</Text>
-        <Text>Build 09:50</Text>
-      </ScrollView>
+    </View> :
+    null
+      }
     </View>
   );
 }
@@ -278,16 +340,36 @@ loginButton: {
   marginTop: 20,
   paddingTop: 20,
 },
+headerColumn: {
+  backgroundColor: 'transparent',
+  ...Platform.select({
+    ios: {
+      alignItems: 'center',
+      elevation: 1,
+      marginTop: -1,
+    },
+    android: {
+      alignItems: 'center',
+    },
+  }),
+},
+
 header: {
   fontSize: 25
 },
-image: {
-  marginTop: 15,
-  width: 150,
-  height: 150,
-  borderColor: "rgba(0,0,0,0.2)",
-  borderWidth: 3,
-  borderRadius: 150
-}
+userImage: {
+  borderRadius: 60,
+  height: 120,
+  marginBottom: 10,
+  width: 120,
+
+},
+userNameText: {
+  color: '#5B5A5A',
+  fontSize: 18,
+  fontWeight: 'bold',
+  textAlign: 'center',
+  paddingBottom: 8,
+},
 
 });

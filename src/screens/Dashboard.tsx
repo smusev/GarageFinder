@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { StyleSheet, Dimensions, ScrollView, Animated, Image, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
 //import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
@@ -7,6 +7,10 @@ import MapView from 'react-native-map-clustering';
 import { Marker } from 'react-native-maps';
 //import ClusteredMapView from "react-native-maps-super-cluster";
 import { COORDS, INITIAL_POSITION } from "../Data";
+import firestore from '@react-native-firebase/firestore';
+import {RootStateOrAny, useSelector} from 'react-redux';
+import { useFirestoreConnect, isLoaded, isEmpty } from 'react-redux-firebase'
+
 
 export default function Dashboard({navigation}:any) {
 
@@ -16,22 +20,63 @@ export default function Dashboard({navigation}:any) {
   const CARD_WIDTH = Dimensions.get('window').width * 0.85;
 
   const [ cardList, setCardList ] = useState([]);
+  const [ loading, setLoading ] = useState(true);
+  const [ markerList, setMarkerList ] = useState([])
   const _scrollView = useRef();
   const superCluster = useRef();
 
   let zoomLevel = 9;
 
+  useFirestoreConnect(['posts']);
+  const posts = useSelector((state: RootStateOrAny) => state.firestore.data.posts )
+  
+  useEffect(() => {
+    getMarkers();
+  }, [posts]);
+
+  const getMarkers = () => {
+    var arr = [];
+    for (let key in posts) {    
+      if (posts[key]){
+        arr.push({id: key, ...posts[key]});
+      }
+    }
+    console.log(arr);
+
+    const result = arr.map(data => {
+      return(
+      <Marker 
+        key = {data.id}
+        identifier	= {data.id}
+        coordinate = {{ latitude: data.coordinates._latitude, longitude: data.coordinates._longitude}}
+        style = {styles.markerWrap}
+        onPress = {handleMarkerPress}
+        tracksViewChanges={false}
+        >
+        <Text style={styles.markerText}>
+          {data.price}
+        </Text>
+        <View style={styles.arrowDown} />
+        <View style={styles.marker} />
+      </Marker>   
+      )
+    });
+    setLoading(false)
+    setMarkerList(result);
+  }
+
   const handleMarkerPress = (e) => {
-    let card = COORDS.find(item => item.identifier === e.nativeEvent.id)
-    setCardList([card])
-    console.log(`кол-во элементов ${cardList.length}`);
+    let card = posts[e.nativeEvent.id]
+    console.log(card);
+    setCardList([card]);
   }
 
   const xOffset = new Animated.Value(0);
 
   const getMarkersList = (COORDS) => {
     const markers = COORDS.map(data => renderMarker(data));
-    return markers;
+    setMarkerList(markers);
+    console.log(markerList);
   };
 
   const renderMarker = (data) => {
@@ -51,6 +96,33 @@ export default function Dashboard({navigation}:any) {
         <View style={styles.marker} />
       </Marker>
   )}
+
+  /*
+  const getMarkers = async () => {
+    const markers = await firestore().collection('posts').get();
+    const result = markers._docs.map(data => {
+      return(
+      <Marker 
+        key = {data.id}
+        identifier	= {data.id}
+        coordinate = {data._data.coordinate}
+        style = {styles.markerWrap}
+        onPress = {handleMarkerPress}
+        tracksViewChanges={false}
+        >
+        <Text style={styles.markerText}>
+          {data._data.price}
+        </Text>
+        <View style={styles.arrowDown} />
+        <View style={styles.marker} />
+      </Marker>   
+      )
+    });
+    setLoading(false)
+    setMarkerList(result);
+    wow();
+  }
+*/
 
   const onRegionChangeComplete = (region) => {
     zoomLevel = Math.log2(360 * ((WIDTH/256) / region.longitudeDelta)) + 1
@@ -139,8 +211,7 @@ const renderCluster = (cluster) => {
     
         return markers;
       };
-    
-
+   
   return (
     <View style={styles.container}>
 
@@ -162,7 +233,7 @@ const renderCluster = (cluster) => {
       */ }
 
       <TouchableOpacity
-        onPress={() => navigation.navigate('Filter')}
+        onPress={() => getMarkers()}
         style={styles.filterButton}>
         <Text style={styles.filterText}>Filter goes here</Text>
       </TouchableOpacity>
@@ -175,7 +246,7 @@ const renderCluster = (cluster) => {
         //renderCluster = {renderCluster}
         superClusterRef={superCluster}
         >
-        {getMarkersList(COORDS)}
+        {markerList && markerList }
         </MapView>
         { cardList.length === 0 ? null :
         <Animated.ScrollView
@@ -204,7 +275,7 @@ const renderCluster = (cluster) => {
             <TouchableWithoutFeedback onPress={() => navigation.navigate('Details')} key={index}>
             <View style={styles.card} >
               <Image
-                source={marker.image}
+                source={{uri: marker.images[0]}}
                 style={styles.cardImage}
                 resizeMode="cover"
               />
@@ -246,7 +317,7 @@ const renderCluster = (cluster) => {
       </Marker>
       </MapView> */}
     </View>
-  );
+  ); 
 }
 
 const styles = StyleSheet.create({

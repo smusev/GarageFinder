@@ -1,7 +1,7 @@
 import { LoginAction, UserData } from '../actions/auth';
 
 interface LoginState {
-  user: UserData;
+  user: UserData | null;
   isLoading: boolean;
   error: string;
   trueFalse: boolean;
@@ -19,11 +19,12 @@ export function loginReducer(state = initialState, action: LoginAction): LoginSt
     case 'LOGIN_REQUEST': 
       return {...state, isLoading: true}
     case 'LOGIN_SUCCESS':
+      console.log(`auth reducer : ${JSON.stringify(action.user)}`);
       return {...state, isLoading: false, user: action.user}
     case 'LOGIN_FAILED':
       return {...state, isLoading: false, error: action.error}
-    case 'LOGIN':
-        return {...state, isLoading: false, trueFalse: action.trueFalse}
+    case 'LOGOUT_SUCCESS':
+        return {...state, isLoading: false, user: null }
     default:
       return state;
   }
