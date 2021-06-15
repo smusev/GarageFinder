@@ -14,7 +14,7 @@ export default function DashboardCard({marker, navigation}:any ) {
               <View style={styles.textContent}>
                 <Text numberOfLines={1} style={styles.cardTitle}>{marker?.price}</Text>
                 <Text numberOfLines={1} style={styles.cardDescription}>
-                  {marker.description}
+                  {marker.title}
                 </Text>
               </View>
             </View>
