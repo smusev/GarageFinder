@@ -2,7 +2,7 @@ import {combineReducers} from 'redux';
 import postReducer from './postReducer';
 import {loginReducer} from './authReducer';
 import { firebaseReducer as firebase } from 'react-redux-firebase';
-import { reduxFirestore, firestoreReducer } from 'redux-firestore';
+import { firestoreReducer } from 'redux-firestore';
 import { persistReducer } from 'redux-persist'
 import AsyncStorage from '@react-native-community/async-storage';
 import hardSet from 'redux-persist/lib/stateReconciler/hardSet'

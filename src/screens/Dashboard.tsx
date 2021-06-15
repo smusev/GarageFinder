@@ -1,16 +1,14 @@
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import { StyleSheet, Dimensions, ScrollView, Animated, Image, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
-//import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
 import MapView from 'react-native-map-clustering';
 import { Marker } from 'react-native-maps';
-//import ClusteredMapView from "react-native-maps-super-cluster";
-import { COORDS, INITIAL_POSITION } from "../Data";
-import firestore from '@react-native-firebase/firestore';
+//import ClusteredMapView from "react-native-maps-super-cluster"; //TODO uninstall
 import {RootStateOrAny, useSelector} from 'react-redux';
 import { useFirestoreConnect, isLoaded, isEmpty } from 'react-redux-firebase'
-
+import { stringify } from 'flatted'
+import DashboardCard from '../components/DashboardCard'
 
 export default function Dashboard({navigation}:any) {
 
@@ -54,7 +52,7 @@ export default function Dashboard({navigation}:any) {
         tracksViewChanges={false}
         >
         <Text style={styles.markerText}>
-          {data.price}
+          {data.price} $
         </Text>
         <View style={styles.arrowDown} />
         <View style={styles.marker} />
@@ -65,7 +63,7 @@ export default function Dashboard({navigation}:any) {
     setMarkerList(result);
   }
 
-  const handleMarkerPress = (e) => {
+  const handleMarkerPress = (e:any) => {
     let card = posts[e.nativeEvent.id]
     console.log(card);
     setCardList([card]);
@@ -97,33 +95,6 @@ export default function Dashboard({navigation}:any) {
       </Marker>
   )}
 
-  /*
-  const getMarkers = async () => {
-    const markers = await firestore().collection('posts').get();
-    const result = markers._docs.map(data => {
-      return(
-      <Marker 
-        key = {data.id}
-        identifier	= {data.id}
-        coordinate = {data._data.coordinate}
-        style = {styles.markerWrap}
-        onPress = {handleMarkerPress}
-        tracksViewChanges={false}
-        >
-        <Text style={styles.markerText}>
-          {data._data.price}
-        </Text>
-        <View style={styles.arrowDown} />
-        <View style={styles.marker} />
-      </Marker>   
-      )
-    });
-    setLoading(false)
-    setMarkerList(result);
-    wow();
-  }
-*/
-
   const onRegionChangeComplete = (region) => {
     zoomLevel = Math.log2(360 * ((WIDTH/256) / region.longitudeDelta)) + 1
   }
@@ -134,23 +105,6 @@ export default function Dashboard({navigation}:any) {
     }
     console.log(children.length)
   }
-/*
-  const renderCluster = (cluster, onPress) => {
-        const pointCount = cluster.pointCount,
-          coordinate = cluster.coordinate,
-          clusterId = cluster.clusterId
-
-        return (
-          <Marker tracksViewChanges={false} identifier={`cluster-${clusterId}`} coordinate={coordinate} onPress={onPress}>
-            <View style={styles.clusterContainer}>
-              <Text style={styles.clusterText}>
-                {pointCount}
-              </Text>
-            </View>
-          </Marker>
-        )
-      }
-*/
 
 const renderCluster = (cluster) => {
   const { geometry, onPress, id } = cluster;
@@ -214,31 +168,11 @@ const renderCluster = (cluster) => {
    
   return (
     <View style={styles.container}>
-
-      {/* == от этого можно избавиться, новая библиотека работает лучше ==
-      <ClusteredMapView
-        style={{flex: 1}}
-        maxZoom	= {18}
-        radius = {80}
-        maxZoomLevel = {18}
-        data={COORDS}
-        initialRegion={INITIAL_POSITION}
-        //ref={(r) => { this.map = r }}
-        preserveClusterPressBehavior = {true}
-        onClusterPress = {onClusterPress}
-        renderMarker = {renderMarker}
-        renderCluster = {renderCluster}
-        onRegionChangeComplete = {onRegionChangeComplete} >
-      </ClusteredMapView> 
-      */ }
-
       <TouchableOpacity
         onPress={() => getMarkers()}
         style={styles.filterButton}>
         <Text style={styles.filterText}>Filter goes here</Text>
       </TouchableOpacity>
-      
-
       <MapView 
         initialRegion={INITIAL_REGION} 
         style={styles.mapStyle}
@@ -272,50 +206,10 @@ const renderCluster = (cluster) => {
           onContentSizeChange = {() => { _scrollView.current.scrollTo({x:0, y:0, animated: true})}}
         >
           {cardList.map((marker, index) => (
-            <TouchableWithoutFeedback onPress={() => navigation.navigate('Details')} key={index}>
-            <View style={styles.card} >
-              <Image
-                source={{uri: marker.images[0]}}
-                style={styles.cardImage}
-                resizeMode="cover"
-              />
-              <View style={styles.textContent}>
-                <Text numberOfLines={1} style={styles.cardtitle}>{marker.price}</Text>
-                <Text numberOfLines={1} style={styles.cardDescription}>
-                  {marker.description}
-                </Text>
-              </View>
-            </View>
-            </TouchableWithoutFeedback>
+            <DashboardCard navigation={navigation} marker={marker} key={index}/>
           ))}
         </Animated.ScrollView>
       }
-
-{/*  == оригинальный мапвьюб можно удалить ==
-      <MapView
-        style={styles.mapStyle}
-        initialRegion={{
-          latitude: 49.98,
-          longitude: 36.33,
-          latitudeDelta: 0.04,
-          longitudeDelta: 0.05
-        }}
-      >
-      <Marker
-        key='12'
-        coordinate={{ latitude: 49.98, longitude: 36.36 }}
-        title='wtf title'
-        description='wtf description'
-      >
-      </Marker >
-      <Marker
-        key='11'
-        coordinate={{ latitude: 49.97, longitude: 36.35 }}
-        title='wtf title'
-        description='wtf description'
-      >
-      </Marker>
-      </MapView> */}
     </View>
   ); 
 }
@@ -378,37 +272,6 @@ const styles = StyleSheet.create({
   },
     endPadding: {
     paddingRight: Dimensions.get('window').width * 0.01,
-  },
-  card: {
-    padding: 10,
-    elevation: 2,
-    backgroundColor: "#FFF",
-    marginHorizontal: 10,
-    shadowColor: "#000",
-    shadowRadius: 5,
-    shadowOpacity: 0.3,
-    shadowOffset: { x: 2, y: -2 },
-    height: Dimensions.get('window').height / 4,
-    width: Dimensions.get('window').width * 0.8,
-    overflow: "hidden",
-  },
-  cardImage: {
-    flex: 3,
-    width: "100%",
-    height: "100%",
-    alignSelf: "center",
-  },
-  textContent: {
-    flex: 1,
-  },
-  cardtitle: {
-    fontSize: 12,
-    marginTop: 5,
-    fontWeight: "bold",
-  },
-  cardDescription: {
-    fontSize: 12,
-    color: "#444",
   },
   markerWrap: {
     alignItems: "center",

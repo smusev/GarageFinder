@@ -16,16 +16,70 @@ import {
   AddParamList,
   SettingsParamList,
 } from '../types';
+import FontAwesome, {
+  SolidIcons,
+  RegularIcons,
+  BrandIcons,
+  parseIconFromClassName,
+} from 'react-native-fontawesome';
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
 export default function BottomTabNavigator() {
   return (
     <BottomTab.Navigator initialRouteName="Dashboard">
-      <BottomTab.Screen name="Dashboard" component={DashboardNavigator} />
-      <BottomTab.Screen name="Favorite" component={FavoriteNavigator} />
-      <BottomTab.Screen name="Add" component={AddNavigator} />
-      <BottomTab.Screen name="Settings" component={SettingsNavigator} />
+      <BottomTab.Screen 
+        name="Dashboard" 
+        component={DashboardNavigator} 
+        options={{
+          tabBarLabel: 'Map',
+          tabBarIcon: () => (
+            <FontAwesome
+              style={{color:'white', fontSize: 24}}
+              icon={SolidIcons.mapMarkedAlt}
+            />
+          ),
+        }}
+    />
+      <BottomTab.Screen 
+        name="Favorite" 
+        component={FavoriteNavigator}
+        options={{
+          tabBarLabel: 'Favorites',
+          tabBarIcon: () => (
+            <FontAwesome
+              style={{color:'white', fontSize: 24}}
+              icon={SolidIcons.heart}
+            />
+          ),
+        }}
+      />
+      <BottomTab.Screen
+        name="Add" 
+        component={AddNavigator} 
+        options={{
+          tabBarLabel: 'Add',
+          tabBarIcon: () => (
+            <FontAwesome
+              style={{color:'white', fontSize: 24}}
+              icon={SolidIcons.plusCircle}
+            />
+          ),
+        }}
+      />
+      <BottomTab.Screen 
+        name="Settings" 
+        component={SettingsNavigator}
+        options={{
+          tabBarLabel: 'Profile',
+          tabBarIcon: () => (
+            <FontAwesome
+              style={{color:'white', fontSize: 24}}
+              icon={SolidIcons.userCog}
+            />
+          ),
+        }}
+      />
     </BottomTab.Navigator>
   );
 }

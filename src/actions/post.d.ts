@@ -1,3 +1,4 @@
+//examples
 export interface DeviceData {
   userAddress: string;
   userAge: number;

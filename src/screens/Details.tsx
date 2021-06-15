@@ -2,8 +2,8 @@ import {StackScreenProps} from '@react-navigation/stack';
 import * as React from 'react';
 import {Image, StyleSheet, Text, TouchableOpacity, View, ScrollView, Dimensions, FlatList} from 'react-native';
 import {RootStackParamList} from '../types';
-import GallerySwiper from "react-native-gallery-swiper";
-import ImageView from "react-native-image-viewing";
+import GallerySwiper from "react-native-gallery-swiper"; //TODO uninstall this 
+import ImageView from "react-native-image-viewing"; //TODO uninstall this
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import FontAwesome, {
@@ -12,42 +12,15 @@ import FontAwesome, {
   BrandIcons,
   parseIconFromClassName,
 } from 'react-native-fontawesome';
+import { parse } from 'flatted'
 
 export default function Details({
+  route,
   navigation,
 }: StackScreenProps<RootStackParamList, 'Root'>) {
 
-  const images = [
-    {
-      key: 1,
-      id: 1,
-      uri: "https://images.unsplash.com/photo-1571501679680-de32f1e7aad4",
-    },
-    {
-      key: 2,
-      id: 2,
-      uri: "https://images.unsplash.com/photo-1573273787173-0eb81a833b34",
-    },
-    {
-      key: 3,
-      id: 3,
-      uri: "https://images.unsplash.com/photo-1569569970363-df7b6160d111",
-    },
-  ];
-  /*
-  const renderPhoto = ({ item, index }) => {
-    return (
-        <View style = {{ width: SCREEN_WIDTH + 5, height: 'auto', 
-          flexDirection:'row'}}>
-          <FastImage 
-            style = { styles.photo }
-            resizeMode = { FastImage.resizeMode.contain }
-            source = {{ uri: item.source.uri }}
-          /> 
-          {itemSeparatorComponent()}
-        </View>
-  )}
-*/
+  const item = parse(route.params);
+  const images = item.images.map((image, index) => {return {key: index, id: index, uri: image}}); 
 
   const itemSeparatorComponent = () => {
     return <View style = {
@@ -65,34 +38,15 @@ export default function Details({
 
   return (
     <View style={styles.container}>
-{/*
-      <ImageView
-        images={images}
-        imageIndex={0}
-        visible={visible}
-        onRequestClose={() => setIsVisible(false)}
-      />
-
-          <FlatList
-            horizontal
-            pagingEnabled={true}
-            showsHorizontalScrollIndicator={false}
-            legacyImplementation={false}
-            data={images}
-            renderItem={item => renderPhoto(item)}
-            keyExtractor={photo => photo.id}
-            style={{width: SCREEN_WIDTH + 5, height:'100%'}}
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={styles.returnButton}>
+          <FontAwesome
+            style={styles.returnIcon}
+            icon={SolidIcons.arrowLeft}
           />
-*/}
-    <TouchableOpacity
-      onPress={() => navigation.goBack()}
-      style={styles.returnButton}>
-        <FontAwesome
-          style={styles.returnIcon}
-          icon={SolidIcons.arrowLeft}
-        />
-    </TouchableOpacity>
-  
+      </TouchableOpacity>
+    
     <View style={styles.galleryContainer}>
       <FlatList
         horizontal 
@@ -103,45 +57,27 @@ export default function Details({
         keyExtractor={image => image.id}
         showsHorizontalScrollIndicator={false}
         renderItem={({item}) => {
+          console.log(`item details: ${JSON.stringify(item)}`)
           return (
             <View style={styles.imageContainer}>
-              <Image style={styles.galleryImage} source={require('../assets/1.jpg')} />
+              <Image style={styles.galleryImage} source={{uri: item.uri}} />
             </View>
           );
         }}
     />
     </View>
 
-    <View style={styles.styledInfo}>
-      <Text style={styles.title}>Площадь: 32кв.м.</Text>
-    </View>
+      <View style={styles.styledInfo}>
+        <Text style={styles.title}>{item.title}</Text>
+      </View>
 
-    <View style={styles.notStyledInfo}>
-      <Text style={styles.linkText}>Продам гараж, утепен, приватизирован, крыша перекрыта в мае 2020годаб ондулин. Есть свет, яма, установлены полочки для хранения. Салтовка, 602 м/р-н</Text>
-    </View>
+      <View style={styles.notStyledInfo}>
+        <Text style={styles.linkText}>{item.price}</Text>
+      </View>
 
-        {/*
-        <ScrollView
-            style={styles.gallery}
-            horizontal
-            snapToInterval={640}
-        >
-        <Image
-        style = {styles.cardImage}
-            source={require('../assets/1.jpg')}
-                resizeMode="cover"
-              />
-        <Image
-                source={require('../assets/2.jpg')}
-                resizeMode="cover"
-              />        
-        <Image
-              source={require('../assets/3.jpg')}
-              resizeMode="cover"
-            />
-        </ScrollView>
-        */}
-
+      <View style={styles.notStyledInfo}>
+        <Text style={styles.linkText}>{item.description}</Text>
+      </View>
 
     </View>
   );

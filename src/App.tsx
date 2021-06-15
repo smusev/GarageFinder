@@ -5,11 +5,11 @@ import {PersistGate} from 'redux-persist/integration/react';
 import {store, persistor} from './store';
 import Navigation from './navigation';
 import { ReactReduxFirebaseProvider } from "react-redux-firebase";
-//import auth, {firebase} from '@react-native-firebase/auth';
 import Config from 'react-native-config';
 import firebase from './config/'
-import { createFirestoreInstance, getFirestore } from 'redux-firestore';
+import { createFirestoreInstance } from 'redux-firestore';
 
+//TODO move it  to RNconfig
 const fbConfig = {
   apiKey: "AIzaSyCq9A5Jjb6hlgeTokNUQ9wtkBJtpfdR1iI",
   appId: "1:217160887815:android:b8e4c81bb4ef1bcb36c4a2",
@@ -27,7 +27,6 @@ const rrfConfig = {
 
 // Initialize firebase instance
 //firebase.initializeApp(fbConfig, "garagefinder");
-
 
 const rrfProps = {
   firebase,

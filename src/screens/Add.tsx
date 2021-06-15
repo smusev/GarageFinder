@@ -14,9 +14,9 @@ import { View,
 import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
 import * as Progress from 'react-native-progress';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker'; //TODO uninstall this
 import {RootStackParamList} from '../types';
-//import ImagePicker from 'react-native-image-crop-picker';
+//import ImagePicker from 'react-native-image-crop-picker'; //TODO uninstall this
 import MultipleImagePicker from "@baronha/react-native-multiple-image-picker";
 import marker from '../assets/icons8-marker.png';
 import auth, {firebase} from '@react-native-firebase/auth';
@@ -133,7 +133,6 @@ export default function Add({
   }
 
   const uploadImage = async (uri) => {
-    //const uri  = images[0].path;
     const filename = uri.substring(uri.lastIndexOf('/') + 1);
     const uploadUri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
     console.log(`${filename}, ${uploadUri}`);
@@ -167,7 +166,6 @@ export default function Add({
       'Photo uploaded!',
       'Your photo has been uploaded to Firebase Cloud Storage!'
     );
-//    setImage({ path: url});
     setUploaded(true);
   };
 

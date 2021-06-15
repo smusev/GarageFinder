@@ -13,21 +13,7 @@ import {
   statusCodes,
 } from '@react-native-google-signin/google-signin';
 
-//import * as GoogleSignIn from 'expo-google-sign-in';
-//import * as Google from 'expo-google-app-auth';
 
-/*
-GoogleSignIn.configure({
-  scopes: ['https://www.googleapis.com/auth/drive.readonly'], // what API you want to access on behalf of the user, default is email and profile
-  webClientId: '871879645753-2khnf70ivvqadsb5og2p7j7q2c8njld6.apps.googleusercontent.com', // client ID of type WEB for your server (needed to verify user ID and offline access)
-  offlineAccess: true, // if you want to access Google API on behalf of the user FROM YOUR SERVER
-  hostedDomain: '', // specifies a hosted domain restriction
-  loginHint: '', // [iOS] The user's ID, or email address, to be prefilled in the authentication UI if possible. [See docs here](https://developers.google.com/identity/sign-in/ios/api/interface_g_i_d_sign_in.html#a0a68c7504c31ab0b728432565f6e33fd)
-  forceCodeForRefreshToken: true, // [Android] related to `serverAuthCode`, read the docs link below *.
-  accountName: '', // [Android] specifies an account name on the device that should be used
-  iosClientId: '<FROM DEVELOPER CONSOLE>', // [iOS] optional, if you want to specify the client ID of type iOS (otherwise, it is taken from GoogleService-Info.plist)
-});
-*/
 export default function ProfileScreen({navigation}){
 
   const dispatch = useDispatch();
@@ -38,60 +24,20 @@ export default function ProfileScreen({navigation}){
 
   console.ignoredYellowBox = ['Warning:'];
   const WebClientID = '217160887815-h7rbqk8i1d6hiiebd7gp0ktoqvqibm6c.apps.googleusercontent.com';
-/*
-  useEffect(() => {
-    initAsync();
-  }, []);
 
-  const initAsync = async () => {
-    try {
-      await GoogleSignIn.initAsync({
-        isOfflineEnabled: true,
-        isPromptEnabled: true,
-//        clientId: '871879645753-2khnf70ivvqadsb5og2p7j7q2c8njld6.apps.googleusercontent.com',
-        clientId: '871879645753-6q43fbeahvjfpuf4ok2ss7tn2m6f9dcm.apps.googleusercontent.com',
-        webClientId: '871879645753-6q43fbeahvjfpuf4ok2ss7tn2m6f9dcm.apps.googleusercontent.com',
-      });
-      alert('initAsync');
-      _syncUserWithStateAsync();
-    } catch ({ message }) {
-      alert('GoogleSignIn.initAsync(): ' + message);
-    }
-  };
-
-  const _syncUserWithStateAsync = async () => {
-    try {
-      const user = await GoogleSignIn.signInSilentlyAsync();
-      //alert('_syncUserWithStateAsync ' + JSON.stringify(user) );
-      setState({...state, user });
-    } catch ({ message }) {
-      //alert('Sync: Error:' + message);
-    }
-  };
-
-  signOutAsync = async () => {
-    await GoogleSignIn.signOutAsync();
-    setState({...state, user: null });
-  };
-
-  signInAsync = async () => {
-    try {
-      await GoogleSignIn.askForPlayServicesAsync();
-      const {type, user} = await GoogleSignIn.signInAsync();
-      if (type === 'success'){
-          setState({...state, user });
-      } else
-        alert(type);
-    } catch ({ message }) {
-      alert('login: Error:' + message);
-    }
-  };
-
+  GoogleSignin.configure({
+    webClientId: '217160887815-h7rbqk8i1d6hiiebd7gp0ktoqvqibm6c.apps.googleusercontent.com', // client ID of type WEB for your server(needed to verify user ID and offline access)
+    offlineAccess: true, // if you want to access Google API on behalf of the user FROM YOUR SERVER
+    forceCodeForRefreshToken: true, // [Android] related to `serverAuthCode`, read the docs link below *.
+    accountName: '', // [Android] specifies an account name on the device that should be used
+  });
+ 
   const signIn = async () => {
+    dispatch(loginRequestGoogle());
     try {
-      await GoogleSignIn.hasPlayServices();
-      const userInfo = await GoogleSignIn.signIn();
-      setState({ userInfo });
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      return(userInfo);
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         // user cancelled the login flow
@@ -104,146 +50,74 @@ export default function ProfileScreen({navigation}){
       }
     }
   };
-*/
 
-GoogleSignin.configure({
-  webClientId: '217160887815-h7rbqk8i1d6hiiebd7gp0ktoqvqibm6c.apps.googleusercontent.com', // client ID of type WEB for your server(needed to verify user ID and offline access)
-  offlineAccess: true, // if you want to access Google API on behalf of the user FROM YOUR SERVER
-  forceCodeForRefreshToken: true, // [Android] related to `serverAuthCode`, read the docs link below *.
-  accountName: '', // [Android] specifies an account name on the device that should be used
-     });
- 
-
-const signIn = async () => {
-  dispatch(loginRequestGoogle());
-  try {
-    await GoogleSignin.hasPlayServices();
-    const userInfo = await GoogleSignin.signIn();
-    return(userInfo);
-  } catch (error) {
-    if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-      // user cancelled the login flow
-    } else if (error.code === statusCodes.IN_PROGRESS) {
-      // operation (e.g. sign in) is in progress already
-    } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-      // play services not available or outdated
-    } else {
-      // some other error happened
-    }
-  }
-};
-
-const   signOut = async () => {
-  try {
-    await GoogleSignin.revokeAccess();
-    await GoogleSignin.signOut();
-    dispatch(logoutSuccess());
-    setUserInfo(null); // Remember to remove the user from your app's state as well
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-const signUp = () => {
-  signIn()
-  .then(data => {
-    // data provides us with an idToken and accessToke, we use these to set up a credential
-    const googleCredential = auth.GoogleAuthProvider.credential(data.idToken, data.accessToken);
+  const signOut = async () => {
     try {
-        firebase.auth().signInWithCredential(googleCredential)
-        .then(user => {
-            //after we have the credential - lets check if the user exists in firestore
-            var docRef = firestore().collection('users').doc(auth().currentUser.uid);
-
-            docRef.get()
-            .then(doc => {
-                dispatch(loginSuccess({id:auth().currentUser?.uid, email:data?.user.email, profilePicture:data?.user.photo }));
-                if (doc.exists) {
-                //user exists then just update the login time
-                setUserInfo(data);
-                return user
-                } else {
-                //user doesn't exist - create a new user in firestore
-                addNewUserToFirestore(user);
-                setUserInfo(data);
-                }
-            })
-            .catch(error => {
-                console.error('Checking if customer exists failed" ' + error);
-            });
-        })
-        .catch(error => {
-            console.error('GoogleSignIn to firebase Failed ' + error);
-        })
+      await GoogleSignin.revokeAccess();
+      await GoogleSignin.signOut();
+      dispatch(logoutSuccess());
+      setUserInfo(null); // Remember to remove the user from your app's state as well
     } catch (error) {
-        console.log("Something generic went wrong, ", error )
+      console.error(error);
     }
-})
-.catch(error => {
-    console.error('GoogleSignIn to firebase Failed ' + error);
-})
-
-}
-
-function addNewUserToFirestore(user) {
-  const collection = firestore().collection('users');
-  const {profile} = user.additionalUserInfo;
-  const uid = auth().currentUser?.uid;
-  const details = {
-    firstName: profile.given_name,
-    lastName: profile.family_name,
-    fullName: profile.name,
-    email: profile.email,
-    picture: profile.picture,
-    createdDtm: firestore.FieldValue.serverTimestamp(),
-    lastLoginTime: firestore.FieldValue.serverTimestamp(),
   };
-  collection.doc(auth().currentUser.uid).set(details);
-  return {user, details};
-}
 
-
-/*
-  signInWithGoogle = async () => {
+  const signUp = () => {
+    signIn()
+    .then(data => {
+      // data provides us with an idToken and accessToke, we use these to set up a credential
+      const googleCredential = auth.GoogleAuthProvider.credential(data.idToken, data.accessToken);
       try {
-        const result = await Expo.Google.logInAsync({
-          androidClientId: "871879645753-2khnf70ivvqadsb5og2p7j7q2c8njld6.apps.googleusercontent.com",
-          //iosClientId: YOUR_CLIENT_ID_HERE,  <-- if you use iOS
-          scopes: ["profile", "email"]
-        })
-        if (result.type === "success") {
-          this.setState({
-            signedIn: true,
-            name: result.user.name,
-            photoUrl: result.user.photoUrl
+          firebase.auth().signInWithCredential(googleCredential)
+          .then(user => {
+              //after we have the credential - lets check if the user exists in firestore
+              var docRef = firestore().collection('users').doc(auth().currentUser.uid);
+
+              docRef.get()
+              .then(doc => {
+                  dispatch(loginSuccess({id:auth().currentUser?.uid, email:data?.user.email, profilePicture:data?.user.photo }));
+                  if (doc.exists) {
+                  //user exists then just update the login time
+                  setUserInfo(data);
+                  return user
+                  } else {
+                  //user doesn't exist - create a new user in firestore
+                  addNewUserToFirestore(user);
+                  setUserInfo(data);
+                  }
+              })
+              .catch(error => {
+                  console.error('Checking if customer exists failed" ' + error);
+              });
           })
-        } else {
-          console.log("cancelled")
-        }
-      } catch (e) {
-        console.log("error", e)
+          .catch(error => {
+              console.error('GoogleSignIn to firebase Failed ' + error);
+          })
+      } catch (error) {
+          console.log("Something generic went wrong, ", error )
       }
+    })
+    .catch(error => {
+        console.error('GoogleSignIn to firebase Failed ' + error);
+    })
   }
 
-  const LoginPage = props => {
-  return (
-    <View>
-      <Text style={styles.header}>Sign In With Google</Text>
-      <Button onPress={() => signInAsync()} title="Sign in with Google" />
-    </View>
-  )
-}
-
-const LoggedInPage = props => {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Welcome:{props.name}</Text>
-      <Image style={styles.image} source={{ uri: props.photoUrl }}/>
-      <Button onPress={() => signOutAsync()} title="Sign out from Google" />
-    </View>
-  )
-}
-*/
+  function addNewUserToFirestore(user) {
+    const collection = firestore().collection('users');
+    const {profile} = user.additionalUserInfo;
+    const uid = auth().currentUser?.uid;
+    const details = {
+      firstName: profile.given_name,
+      lastName: profile.family_name,
+      fullName: profile.name,
+      email: profile.email,
+      picture: profile.picture,
+      createdDtm: firestore.FieldValue.serverTimestamp(),
+      lastLoginTime: firestore.FieldValue.serverTimestamp(),
+    };
+    collection.doc(auth().currentUser.uid).set(details);
+    return {user, details};
+  }
 
   return (
     <View style={styles.container}>
