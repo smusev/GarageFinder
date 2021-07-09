@@ -169,7 +169,7 @@ const renderCluster = (cluster) => {
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        onPress={() => getMarkers()}
+        onPress={() => navigation.navigate('Filter')}
         style={styles.filterButton}>
         <Text style={styles.filterText}>Filter goes here</Text>
       </TouchableOpacity>
@@ -221,8 +221,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   filterButton:{ 
-    margin: 5,
-    width: 350,
+    marginVertical: 10,
+    marginHorizontal: Dimensions.get('window').width * 0.1,
+    width: Dimensions.get('window').width * 0.8,
     height: 50,
     backgroundColor: 'white',
     borderRadius: 35,
@@ -231,7 +232,12 @@ const styles = StyleSheet.create({
     position:'absolute',
     top: 10,
     left: 10,
-    zIndex: 2,
+    zIndex: 1,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowRadius: 5,
+    shadowOpacity: 0.3,
+    shadowOffset: { x: 2, y: -2 },
     },
   title: {
     fontSize: 20,
